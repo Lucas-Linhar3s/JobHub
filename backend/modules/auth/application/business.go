@@ -72,7 +72,7 @@ func (app *AuthApp) RegisterUser(ctx *gin.Context, req *UserRegisterReq) error {
 	}
 
 	if exist, err := service.VerifyEmail(*data.Email); err != nil {
-		app.logger.Error(msg, zap.Error(err))
+		app.logger.Error(msg+"VerifyEmail", zap.Error(err))
 		return err
 	} else if exist {
 		return v1.ErrEmailAlreadyUse
@@ -86,12 +86,12 @@ func (app *AuthApp) RegisterUser(ctx *gin.Context, req *UserRegisterReq) error {
 	data.PasswordHash = utils.GetStringPointer(string(bytes))
 
 	if err = service.RegisterUser(data); err != nil {
-		app.logger.Error(msg, zap.Error(err))
+		app.logger.Error(msg+"RegisterUser", zap.Error(err))
 		return err
 	}
 
 	if err = tx.Commit(); err != nil {
-		app.logger.Error(msg, zap.Error(err))
+		app.logger.Error(msg+"Commit", zap.Error(err))
 		return err
 	}
 
