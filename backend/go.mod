@@ -1,6 +1,6 @@
 module github.com/Lucas-Linhar3s/JobHub
 
-go 1.23.2
+go 1.23.0
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
