@@ -53,7 +53,7 @@ func LoadAttributes(viper *viper.Viper) *Config {
 					Name:              viper.GetString("data.db.user.name"),
 					Username:          viper.GetString("data.db.user.username"),
 					Password:          viper.GetString("data.db.user.password"),
-					HostName:          viper.GetString("data.db.user.host_name"),
+					HostName:          viper.GetString("data.db.user.hostname"),
 					Port:              viper.GetString("data.db.user.port"),
 					MaxConn:           viper.GetInt("data.db.user.max_conn"),
 					MaxIdle:           viper.GetInt("data.db.user.max_idle"),
