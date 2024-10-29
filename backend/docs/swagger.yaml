@@ -1,0 +1,126 @@
+definitions:
+  application.SessionOut:
+    properties:
+      access_token:
+        type: string
+      data_expiracao:
+        type: string
+      user_id:
+        type: string
+    type: object
+  application.UserRegisterReq:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: Job Board Tech API è uma API para gerenciamento de vagas de emprego.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Job Board Tech API
+  version: 1.0.0
+paths:
+  /auth/:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user
+      parameters:
+      - description: User data to register
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/application.UserRegisterReq'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+          schema:
+            type: string
+      summary: Register user
+      tags:
+      - auth
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Login with email and password
+      parameters:
+      - description: User data to login
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/application.UserRegisterReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User login response
+          schema:
+            $ref: '#/definitions/application.SessionOut'
+      summary: Login with email and password
+      tags:
+      - auth
+  /auth/login/oauth:
+    get:
+      consumes:
+      - application/json
+      description: Redirect to login with oauth
+      parameters:
+      - description: Oauth provider
+        in: query
+        name: oauth_provider
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: Redirect to login with oauth
+      tags:
+      - auth
+  /auth/login/oauth/callback:
+    get:
+      consumes:
+      - application/json
+      description: Callback oauth
+      parameters:
+      - description: Code
+        in: query
+        name: code
+        required: true
+        type: string
+      - description: State
+        in: query
+        name: state
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User login response
+          schema:
+            $ref: '#/definitions/application.SessionOut'
+      summary: Callback oauth
+      tags:
+      - auth
+securityDefinitions:
+  Bearer:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

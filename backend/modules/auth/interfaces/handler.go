@@ -21,7 +21,14 @@ func NewAuthHandler(app *application.AuthApp) *AuthHandler {
 	}
 }
 
-// RegisterUser is a function that registers a new user
+// @Summary Register user
+// @Description Register a new user
+// @Tags auth
+// @Accept  json
+// @Produce  json
+// @Param user body application.UserRegisterReq true "User data to register"
+// @Success 204 {string} string "No content"
+// @Router /auth/ [post]
 func (h *AuthHandler) RegisterUser(ctx *gin.Context) {
 	var req application.UserRegisterReq
 
@@ -38,7 +45,14 @@ func (h *AuthHandler) RegisterUser(ctx *gin.Context) {
 	v1.HandleSuccess(ctx, http.StatusNoContent, nil)
 }
 
-// LoginWithEmailAndPassword is a function that logs in with email and password
+// @Summary Login with email and password
+// @Description Login with email and password
+// @Tags auth
+// @Accept  json
+// @Produce  json
+// @Param user body application.UserRegisterReq true "User data to login"
+// @Success 200 {object} application.SessionOut "User login response"
+// @Router /auth/login [post]
 func (h *AuthHandler) LoginWithEmailAndPassword(ctx *gin.Context) {
 	var req application.UserRegisterReq
 
@@ -56,13 +70,27 @@ func (h *AuthHandler) LoginWithEmailAndPassword(ctx *gin.Context) {
 	v1.HandleSuccess(ctx, http.StatusOK, response)
 }
 
-// RedirectLoginOauth is a function that redirects to the login with oauth
+// @Summary Redirect to login with oauth
+// @Description Redirect to login with oauth
+// @Tags auth
+// @Accept  json
+// @Produce  json
+// @Param oauth_provider query string true "Oauth provider"
+// @Router /auth/login/oauth [get]
 func (h *AuthHandler) RedirectLoginOauth(ctx *gin.Context) {
 	oatuhProvider := ctx.Request.URL.Query().Get("oauth_provider")
 	h.app.RedirectLoginOauth(ctx, &oatuhProvider)
 }
 
-// Callback is a function that handles the callback of the oauth
+// @Summary Callback oauth
+// @Description Callback oauth
+// @Tags auth
+// @Accept  json
+// @Produce  json
+// @Param code query string true "Code"
+// @Param state query string true "State"
+// @Success 200 {object} application.SessionOut "User login response"
+// @Router /auth/login/oauth/callback [get]
 func (h *AuthHandler) Callback(ctx *gin.Context) {
 	fmt.Println(ctx.Request.URL)
 

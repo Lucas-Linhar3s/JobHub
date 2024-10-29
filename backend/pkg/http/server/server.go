@@ -1,12 +1,12 @@
 package server
 
 import (
+	"github.com/Lucas-Linhar3s/JobHub/docs"
 	"github.com/Lucas-Linhar3s/JobHub/pkg/config"
 	"github.com/gin-gonic/gin"
-	// ginSwagger "github.com/swaggo/gin-swagger"
-	// "github.com/swaggo/swag/example/basic/docs"
-	// swaggerfiles "github.com/swaggo/files"
-	// ginSwagger "github.com/swaggo/gin-swagger"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
+	swaggerfiles "github.com/swaggo/files"
 )
 
 // Server http server
@@ -25,12 +25,12 @@ func NewServer() *Server {
 func (s *Server) Run(
 	conf *config.Config) error {
 	// swagger doc
-	// docs.SwaggerInfo.BasePath = "/"
+	docs.SwaggerInfo.BasePath = "/"
 	// docs
-	// swag := s.Router.Group("/swagger")
-	// swag.GET("/*any", ginSwagger.WrapHandler(
-	// swaggerfiles.Handler,
-	// ))
+	swag := s.Router.Group("/swagger")
+	swag.GET("/*any", ginSwagger.WrapHandler(
+		swaggerfiles.Handler,
+	))
 
 	s.Router.NoRoute(func(c *gin.Context) {
 		c.JSON(404, gin.H{"code": "PAGE_NOT_FOUND", "message": "Page not found " + " : " + c.Request.URL.String()})
