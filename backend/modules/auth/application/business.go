@@ -56,7 +56,7 @@ func (app *AuthApp) RegisterUser(ctx *gin.Context, req *UserRegisterReq) error {
 	}
 	committed := false
 defer func() {
-    if !committed {
+    if committed {
         tx.Rollback()
     }
 }()
