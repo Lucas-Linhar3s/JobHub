@@ -36,10 +36,10 @@ data:
       driver: postgres
       nick: postgres
       name: postgres
-      username: postgres
-      password: dev123456
-      hostname: localhost
-      port: 5432
+      username: postgres.xiivsgnonhzqlrkdfnag
+      password: o1giO5i2itiepN31
+      hostname: aws-0-sa-east-1.pooler.supabase.com
+      port: 6543
       max_conn: 5
       max_idle: 1
       transaction_timeout: 1
