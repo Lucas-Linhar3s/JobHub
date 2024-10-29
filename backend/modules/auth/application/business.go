@@ -49,17 +49,12 @@ func NewAuthApp(
 func (app *AuthApp) RegisterUser(ctx *gin.Context, req *UserRegisterReq) error {
 	const msg = "Error while registering user"
 
-	tx, err := app.db.NewTransaction()
+	tx, err := app.db.NewTransaction(ctx)
 	if err != nil {
 		app.logger.Error(msg, zap.Error(err))
 		return err
 	}
-	committed := false
-defer func() {
-    if committed {
-        tx.Rollback()
-    }
-}()
+	defer tx.Rollback()
 
 	var (
 		service = domain.GetService(domain.GetRepository(tx))
@@ -70,15 +65,13 @@ defer func() {
 		app.logger.Error(msg, zap.Error(err))
 		return err
 	}
-fmt.Println("Transaction ID in RegisterUser:", tx)
+
 	if data, err = utils.ConvertRequestToModel[domain.AuthModel](req); err != nil {
 		app.logger.Error(msg, zap.Error(err))
 		return err
 	}
 
-	fmt.Println("Transaction ID in RegisterUser:", tx)
 	if exist, err := service.VerifyEmail(*data.Email); err != nil {
-fmt.Println("Transaction ID in VerifyEmail:", tx)
 		app.logger.Error(msg+"VerifyEmail", zap.Error(err))
 		return err
 	} else if exist {
@@ -110,7 +103,7 @@ fmt.Println("Transaction ID in VerifyEmail:", tx)
 func (app *AuthApp) LoginWithEmailAndPassword(ctx *gin.Context, req *UserRegisterReq) (*SessionOut, error) {
 	var msg = "Error while logging in with email and password"
 
-	tx, err := app.db.NewTransaction()
+	tx, err := app.db.NewTransaction(ctx)
 	if err != nil {
 		app.logger.Error(msg, zap.Error(err))
 		return nil, err
@@ -227,15 +220,15 @@ func (app *AuthApp) GetUserData(ctx *gin.Context, req CalbackSSOReq) (*UserDataC
 }
 
 // LoginOrRegisterUserOauth logs in or registers a user with oauth.
-func (app *AuthApp) LoginOrRegisterUserOauth(req *UserDataCallbackRes) (*SessionOut, error) {
+func (app *AuthApp) LoginOrRegisterUserOauth(ctx *gin.Context,req *UserDataCallbackRes) (*SessionOut, error) {
 	const msg = "Error while logging in or registering user with oauth"
 
-	tx, err := app.db.NewTransaction()
+	tx, err := app.db.NewTransaction(ctx)
 	if err != nil {
 		app.logger.Error(msg, zap.Error(err))
 		return nil, err
 	}
-	// defer tx.Rollback()
+	defer tx.Rollback()
 
 	var (
 		data    *domain.AuthModel
