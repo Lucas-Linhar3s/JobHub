@@ -10,6 +10,7 @@ import (
 
 	"github.com/Lucas-Linhar3s/JobHub/pkg/config"
 	"github.com/Lucas-Linhar3s/JobHub/pkg/log"
+	"github.com/gin-gonic/gin"
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx"
 	"github.com/jackc/pgx/stdlib"
@@ -104,21 +105,21 @@ func open(c *config.Config) (database *Database, err error) {
 }
 
 // NewTransaction is a function that returns a new transaction instance
-func (d *Database) NewTransaction() (*Database, error) {
+func (d *Database) NewTransaction(ctx *gin.Context) (*Database, error) {
 	var (
 		tx  *sql.Tx
 		err error
 	)
 
-	// Define o timeout para a transação com `context.WithTimeout`
-	ctx, cancel := context.WithTimeout(context.Background(), 1200*time.Second)
-	defer cancel() // Certifique-se de cancelar o contexto quando sair da função
+	// Utilize o contexto do Gin, que pode ter cancelamento e timeout
+	ctxTimeout, cancel := context.WithTimeout(ctx, 1200*time.Second)
+	defer cancel() // Cancelar o contexto quando sair da função
 
-
-	tx, err = d.db.BeginTx(ctx, nil)
+	tx, err = d.db.BeginTx(ctxTimeout, nil)
 	if err != nil {
 		return nil, err
 	}
+
 
 	return &Database{
 		tx:      tx,
