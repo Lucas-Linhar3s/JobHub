@@ -16,7 +16,7 @@ import (
 // @contact.email  support@swagger.io
 // @license.name  Apache 2.0
 // @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
-// @host      localhost:8000
+// @host      localhost:8080
 // @securityDefinitions.apiKey Bearer
 // @in header
 // @name Authorization
@@ -28,7 +28,6 @@ func main() {
 		panic(err)
 	}
 	defer cleanUp()
-
 	app.Logger.Info("server start", zap.String("host", fmt.Sprintf("http://%s%s", app.Config.Http.Host, app.Config.Http.Port)))
 	app.Logger.Info("docs addr", zap.String("addr", fmt.Sprintf("http://%s%s/swagger/index.html", app.Config.Http.Host, app.Config.Http.Port)))
 	if err = app.Server.Run(app.Config); err != nil {

@@ -12,7 +12,7 @@ import (
 
 // NewViper is a function that returns a new viper instance
 func NewViper() *viper.Viper {
-	p := flag.String("conf", "../../config/local.yml", "config path, eg: -conf ../../config/local.yml")
+	p := flag.String("conf", "./config/prod.yml", "config path, eg: -conf ./config/prod.yml")
 	flag.Parse()
 	envConf := os.Getenv("APP_CONF")
 	if envConf == "" {
@@ -44,36 +44,7 @@ func LoadAttributes(viper *viper.Viper) *Config {
 			Host: viper.GetString("http.host"),
 			Port: viper.GetString("http.port"),
 		},
-		Security: &Security{
-			ApiSign: &ApiSign{
-				AppKey:      viper.GetString("security.api_sign.app_key"),
-				AppSecurity: viper.GetString("security.api_sign.app_security"),
-			},
-			Jwt: &Jwt{
-				ExpiresAt: viper.GetInt("security.jwt.expire_at"),
-				Key:       viper.GetString("security.jwt.key"),
-			},
-			Oauth2: &Oauth2{
-				Google: &Google{
-					ClientId:     viper.GetString("security.oauth2.google.client_id"),
-					ClientSecret: viper.GetString("security.oauth2.google.client_secret"),
-					RedirectUrl:  viper.GetString("security.oauth2.google.redirect_url"),
-					Scopes:       viper.GetStringSlice("security.oauth2.google.scopes"),
-				},
-				Github: &Github{
-					RedirectUrl:  viper.GetString("security.oauth2.github.redirect_url"),
-					ClientId:     viper.GetString("security.oauth2.github.client_id"),
-					ClientSecret: viper.GetString("security.oauth2.github.client_secret"),
-					Scopes:       viper.GetStringSlice("security.oauth2.github.scopes"),
-				},
-				Linkedin: &Linkedin{
-					ClientId:     viper.GetString("security.oauth2.linkedin.client_id"),
-					ClientSecret: viper.GetString("security.oauth2.linkedin.client_secret"),
-					RedirectUrl:  viper.GetString("security.oauth2.linkedin.redirect_url"),
-					Scopes:       viper.GetStringSlice("security.oauth2.linkedin.scopes"),
-				},
-			},
-		},
+		Security: loadAttributesEnv(viper).Security,
 		Data: &Data{
 			DB: &Db{
 				User: &User{
@@ -100,5 +71,64 @@ func LoadAttributes(viper *viper.Viper) *Config {
 			MaxSize:     viper.GetInt("log.max_size"),
 			Compress:    viper.GetBool("log.compress"),
 		},
+	}
+}
+
+func loadAttributesEnv(viper *viper.Viper) *Config {
+	envViper := viper.GetString("env")
+	if envViper == "prod" {
+		return &Config{
+			Security: &Security{
+				ApiSign: &ApiSign{
+					AppKey:      os.Getenv(viper.GetString("security.api_sign.app_key")),
+					AppSecurity: os.Getenv(viper.GetString("security.api_sign.app_security")),
+				},
+				Jwt: &Jwt{
+					ExpiresAt: viper.GetInt("security.jwt.expire_at"),
+					Key:       os.Getenv(viper.GetString("security.jwt.key")),
+				},
+				Oauth2: &Oauth2{
+					Google: &Google{
+						ClientId:     os.Getenv(viper.GetString("security.oauth2.google.client_id")),
+						ClientSecret: os.Getenv(viper.GetString("security.oauth2.google.client_secret")),
+						RedirectUrl:  viper.GetString("security.oauth2.google.redirect_url"),
+						Scopes:       viper.GetStringSlice("security.oauth2.google.scopes"),
+					},
+					Github: &Github{
+						RedirectUrl:  os.Getenv(viper.GetString("security.oauth2.github.redirect_url")),
+						ClientId:     os.Getenv(viper.GetString("security.oauth2.github.client_id")),
+						ClientSecret: viper.GetString("security.oauth2.github.client_secret"),
+						Scopes:       viper.GetStringSlice("security.oauth2.github.scopes"),
+					},
+				},
+			},
+		}
+	} else {
+		return &Config{
+			Security: &Security{
+				ApiSign: &ApiSign{
+					AppKey:      viper.GetString("security.api_sign.app_key"),
+					AppSecurity: viper.GetString("security.api_sign.app_security"),
+				},
+				Jwt: &Jwt{
+					ExpiresAt: viper.GetInt("security.jwt.expire_at"),
+					Key:       viper.GetString("security.jwt.key"),
+				},
+				Oauth2: &Oauth2{
+					Google: &Google{
+						ClientId:     viper.GetString("security.oauth2.google.client_id"),
+						ClientSecret: viper.GetString("security.oauth2.google.client_secret"),
+						RedirectUrl:  viper.GetString("security.oauth2.google.redirect_url"),
+						Scopes:       viper.GetStringSlice("security.oauth2.google.scopes"),
+					},
+					Github: &Github{
+						RedirectUrl:  viper.GetString("security.oauth2.github.redirect_url"),
+						ClientId:     viper.GetString("security.oauth2.github.client_id"),
+						ClientSecret: viper.GetString("security.oauth2.github.client_secret"),
+						Scopes:       viper.GetStringSlice("security.oauth2.github.scopes"),
+					},
+				},
+			},
+		}
 	}
 }

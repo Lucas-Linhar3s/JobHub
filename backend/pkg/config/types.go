@@ -23,9 +23,8 @@ type Security struct {
 }
 
 type Oauth2 struct {
-	Google   *Google
-	Github   *Github
-	Linkedin *Linkedin
+	Google *Google
+	Github *Github
 }
 
 // ApiSign is a struct that contains the app key and app security
@@ -48,13 +47,6 @@ type Google struct {
 }
 
 type Github struct {
-	ClientId     string
-	ClientSecret string
-	RedirectUrl  string
-	Scopes       []string
-}
-
-type Linkedin struct {
 	ClientId     string
 	ClientSecret string
 	RedirectUrl  string

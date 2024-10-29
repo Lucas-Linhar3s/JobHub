@@ -1,0 +1,53 @@
+env: prod
+http:
+  host: 0.0.0.0
+  port: :3000
+security:
+  oauth2:
+    google:
+      client_id: OAUTH_GOOGLE_CLIENT_ID
+      client_secret: OAUTH_GOOGLE_CLIENT_SECRET
+      redirect_url: http://localhost:8080/auth/login/oauth/callback?oauth_provider=Google
+      scopes: [
+        https://www.googleapis.com/auth/userinfo.email,
+        https://www.googleapis.com/auth/userinfo.profile,
+        openid
+      ]
+    github:
+      client_id: OAUTH_GITHUB_CLIENT_ID
+      client_secret: OAUTH_GITHUB_CLIENT_SECRET
+      redirect_url: http://localhost:8080/auth/login/oauth/callback?oauth_provider=Github
+      scopes: [
+        user:email,
+        read:user
+      ]
+  api_sign:
+    app_key: SIGN_APP_KEY
+    app_security: SIGN_APP_SECURITY
+  jwt:
+    expire_at: 60
+    key: JWT_SECRET_KEY
+data:
+  db:
+    # user:
+      # driver: sqlite3
+      # dsn: ""
+    user:
+      driver: postgres
+      nick: postgres
+      name: postgres
+      username: postgres
+      password: dev123456
+      hostname: localhost
+      port: 5432
+      max_conn: 5
+      max_idle: 1
+      transaction_timeout: 1
+log:
+  log_level: info
+  encoding: json           # json or console
+  log_file_name: "../../storage/logs/server/server.log"
+  max_backups: 30
+  max_age: 7
+  max_size: 1024
+  compress: true
