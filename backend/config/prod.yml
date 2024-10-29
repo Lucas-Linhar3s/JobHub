@@ -42,7 +42,7 @@ data:
       port: 6543
       max_conn: 5
       max_idle: 1
-      transaction_timeout: 10
+      transaction_timeout: 20
 log:
   log_level: info
   encoding: json           # json or console
