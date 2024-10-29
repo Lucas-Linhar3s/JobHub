@@ -54,7 +54,12 @@ func (app *AuthApp) RegisterUser(ctx *gin.Context, req *UserRegisterReq) error {
 		app.logger.Error(msg, zap.Error(err))
 		return err
 	}
-	defer tx.Rollback()
+	committed := false
+defer func() {
+    if !committed {
+        tx.Rollback()
+    }
+}()
 
 	var (
 		service = domain.GetService(domain.GetRepository(tx))
@@ -94,6 +99,7 @@ func (app *AuthApp) RegisterUser(ctx *gin.Context, req *UserRegisterReq) error {
 		app.logger.Error(msg+"Commit", zap.Error(err))
 		return err
 	}
+	committed = true
 
 	return nil
 }
