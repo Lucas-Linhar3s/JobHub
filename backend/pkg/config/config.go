@@ -95,9 +95,9 @@ func loadAttributesEnv(viper *viper.Viper) *Config {
 						Scopes:       viper.GetStringSlice("security.oauth2.google.scopes"),
 					},
 					Github: &Github{
-						RedirectUrl:  os.Getenv(viper.GetString("security.oauth2.github.redirect_url")),
+						RedirectUrl:  viper.GetString("security.oauth2.github.redirect_url"),
 						ClientId:     os.Getenv(viper.GetString("security.oauth2.github.client_id")),
-						ClientSecret: viper.GetString("security.oauth2.github.client_secret"),
+						ClientSecret: os.Getenv(viper.GetString("security.oauth2.github.client_secret")),
 						Scopes:       viper.GetStringSlice("security.oauth2.github.scopes"),
 					},
 				},
