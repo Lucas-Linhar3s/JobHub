@@ -109,16 +109,11 @@ func (d *Database) NewTransaction() (*Database, error) {
 		tx  *sql.Tx
 		err error
 	)
-	ctx, cancel := context.WithCancel(context.Background())
 
-	go func() {
-		if tx == nil {
-			<-time.After(time.Duration(d.transationTimeout+1) * time.Second)
-			if tx == nil {
-				cancel()
-			}
-		}
-	}()
+	// Define o timeout para a transação com `context.WithTimeout`
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(d.transationTimeout)*time.Second)
+	defer cancel() // Certifique-se de cancelar o contexto quando sair da função
+
 
 	tx, err = d.db.BeginTx(ctx, nil)
 	if err != nil {
