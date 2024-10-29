@@ -70,13 +70,15 @@ defer func() {
 		app.logger.Error(msg, zap.Error(err))
 		return err
 	}
-
+fmt.Println("Transaction ID in RegisterUser:", tx)
 	if data, err = utils.ConvertRequestToModel[domain.AuthModel](req); err != nil {
 		app.logger.Error(msg, zap.Error(err))
 		return err
 	}
 
+	fmt.Println("Transaction ID in RegisterUser:", tx)
 	if exist, err := service.VerifyEmail(*data.Email); err != nil {
+fmt.Println("Transaction ID in VerifyEmail:", tx)
 		app.logger.Error(msg+"VerifyEmail", zap.Error(err))
 		return err
 	} else if exist {
