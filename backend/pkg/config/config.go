@@ -12,7 +12,7 @@ import (
 
 // NewViper is a function that returns a new viper instance
 func NewViper() *viper.Viper {
-	p := flag.String("conf", "./config/prod.yml", "config path, eg: -conf ./config/prod.yml")
+	p := flag.String("conf", "../../config/prod.yml", "config path, eg: -conf ../../config/prod.yml")
 	flag.Parse()
 	envConf := os.Getenv("APP_CONF")
 	if envConf == "" {
