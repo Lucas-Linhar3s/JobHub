@@ -49,12 +49,20 @@ func NewAuthApp(
 func (app *AuthApp) RegisterUser(ctx *gin.Context, req *UserRegisterReq) error {
 	const msg = "Error while registering user"
 
-	tx, err := app.db.NewTransaction(ctx)
+	commited := false
+	tx, err := app.db.NewTransaction()
 	if err != nil {
 		app.logger.Error(msg, zap.Error(err))
 		return err
 	}
-	defer tx.Rollback()
+	defer func() {
+		if commited {
+			tx.Rollback()
+		} else {
+			app.logger.Error("Transaction not commited")
+		}
+	}()
+	app.logger.Info("Transaction started", zap.String("tx", fmt.Sprintf("%v", tx)))
 
 	var (
 		service = domain.GetService(domain.GetRepository(tx))
@@ -72,7 +80,7 @@ func (app *AuthApp) RegisterUser(ctx *gin.Context, req *UserRegisterReq) error {
 	}
 
 	if exist, err := service.VerifyEmail(*data.Email); err != nil {
-		app.logger.Error(msg+"VerifyEmail", zap.Error(err))
+		app.logger.Error(msg, zap.Error(err))
 		return err
 	} else if exist {
 		return v1.ErrEmailAlreadyUse
@@ -86,14 +94,15 @@ func (app *AuthApp) RegisterUser(ctx *gin.Context, req *UserRegisterReq) error {
 	data.PasswordHash = utils.GetStringPointer(string(bytes))
 
 	if err = service.RegisterUser(data); err != nil {
-		app.logger.Error(msg+"RegisterUser", zap.Error(err))
+		app.logger.Error(msg, zap.Error(err))
 		return err
 	}
 
 	if err = tx.Commit(); err != nil {
-		app.logger.Error(msg+"Commit", zap.Error(err))
+		app.logger.Error(msg, zap.Error(err))
 		return err
 	}
+	commited = true
 
 	return nil
 }
@@ -102,7 +111,7 @@ func (app *AuthApp) RegisterUser(ctx *gin.Context, req *UserRegisterReq) error {
 func (app *AuthApp) LoginWithEmailAndPassword(ctx *gin.Context, req *UserRegisterReq) (*SessionOut, error) {
 	var msg = "Error while logging in with email and password"
 
-	tx, err := app.db.NewTransaction(ctx)
+	tx, err := app.db.NewTransaction()
 	if err != nil {
 		app.logger.Error(msg, zap.Error(err))
 		return nil, err
@@ -219,10 +228,10 @@ func (app *AuthApp) GetUserData(ctx *gin.Context, req CalbackSSOReq) (*UserDataC
 }
 
 // LoginOrRegisterUserOauth logs in or registers a user with oauth.
-func (app *AuthApp) LoginOrRegisterUserOauth(ctx *gin.Context,req *UserDataCallbackRes) (*SessionOut, error) {
+func (app *AuthApp) LoginOrRegisterUserOauth(ctx *gin.Context, req *UserDataCallbackRes) (*SessionOut, error) {
 	const msg = "Error while logging in or registering user with oauth"
 
-	tx, err := app.db.NewTransaction(ctx)
+	tx, err := app.db.NewTransaction()
 	if err != nil {
 		app.logger.Error(msg, zap.Error(err))
 		return nil, err

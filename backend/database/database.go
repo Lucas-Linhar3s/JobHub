@@ -10,7 +10,6 @@ import (
 
 	"github.com/Lucas-Linhar3s/JobHub/pkg/config"
 	"github.com/Lucas-Linhar3s/JobHub/pkg/log"
-	"github.com/gin-gonic/gin"
 	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx"
 	"github.com/jackc/pgx/stdlib"
@@ -100,26 +99,28 @@ func open(c *config.Config) (database *Database, err error) {
 	return &Database{
 		db:                db,
 		transationTimeout: c.Data.DB.User.TransationTimeout,
-		Builder:           squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar).RunWith(db),
 	}, nil
 }
 
 // NewTransaction is a function that returns a new transaction instance
-func (d *Database) NewTransaction(ctx *gin.Context) (*Database, error) {
+func (d *Database) NewTransaction() (*Database, error) {
 	var (
 		tx  *sql.Tx
 		err error
 	)
+	ctx, cancel := context.WithCancel(context.Background())
 
-	// Utilize o contexto do Gin, que pode ter cancelamento e timeout
-	ctxTimeout, cancel := context.WithTimeout(ctx, 1200*time.Second)
-	defer cancel() // Cancelar o contexto quando sair da função
+	go func() {
+		<-time.After(time.Duration(20) * time.Second)
+		if tx == nil {
+			cancel()
+		}
+	}()
 
-	tx, err = d.db.BeginTx(ctxTimeout, nil)
+	tx, err = d.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
-
 
 	return &Database{
 		tx:      tx,
@@ -133,9 +134,9 @@ func (t *Database) Commit() (err error) {
 	return
 }
 
-// Rollback is a function that rolls back the transaction
-func (d *Database) Rollback() {
-	_ = d.tx.Rollback()
+// Rollback rollback pending transaction for all databases open
+func (t *Database) Rollback() {
+	_ = t.tx.Rollback()
 }
 
 // Close is a function that closes the database connection
