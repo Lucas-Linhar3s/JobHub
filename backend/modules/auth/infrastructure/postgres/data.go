@@ -18,7 +18,7 @@ func (pg *PGAuth) RegisterUser(model *infrastructure.AuthModel) error {
 	if err := pg.Db.Builder.
 		Insert("jobhub.users").
 		Columns("email", "password_hash", "oauth_provider", "oauth_id", "picture_url").
-		Values(model.Email, model.PasswordHash, model.OauthProvider, *model.OauthId, model.Picture).
+		Values(model.Email, model.PasswordHash, model.OauthProvider, model.OauthId, model.Picture).
 		Suffix("RETURNING id").
 		Scan(new(string)); err != nil {
 		return err
