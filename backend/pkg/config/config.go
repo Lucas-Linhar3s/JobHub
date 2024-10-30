@@ -12,7 +12,7 @@ import (
 
 // NewViper is a function that returns a new viper instance
 func NewViper() *viper.Viper {
-	p := flag.String("conf", "./config/prod.yml", "config path, eg: -conf ./config/prod.yml")
+	p := flag.String("conf", "../../config/prod.yml", "config path, eg: -conf ../../config/prod.yml")
 	flag.Parse()
 	envConf := os.Getenv("APP_CONF")
 	if envConf == "" {
@@ -53,7 +53,7 @@ func LoadAttributes(viper *viper.Viper) *Config {
 					Name:              viper.GetString("data.db.user.name"),
 					Username:          viper.GetString("data.db.user.username"),
 					Password:          viper.GetString("data.db.user.password"),
-					HostName:          viper.GetString("data.db.user.host_name"),
+					HostName:          viper.GetString("data.db.user.hostname"),
 					Port:              viper.GetString("data.db.user.port"),
 					MaxConn:           viper.GetInt("data.db.user.max_conn"),
 					MaxIdle:           viper.GetInt("data.db.user.max_idle"),
@@ -95,9 +95,9 @@ func loadAttributesEnv(viper *viper.Viper) *Config {
 						Scopes:       viper.GetStringSlice("security.oauth2.google.scopes"),
 					},
 					Github: &Github{
-						RedirectUrl:  os.Getenv(viper.GetString("security.oauth2.github.redirect_url")),
+						RedirectUrl:  viper.GetString("security.oauth2.github.redirect_url"),
 						ClientId:     os.Getenv(viper.GetString("security.oauth2.github.client_id")),
-						ClientSecret: viper.GetString("security.oauth2.github.client_secret"),
+						ClientSecret: os.Getenv(viper.GetString("security.oauth2.github.client_secret")),
 						Scopes:       viper.GetStringSlice("security.oauth2.github.scopes"),
 					},
 				},

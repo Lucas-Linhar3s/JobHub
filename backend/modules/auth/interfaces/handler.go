@@ -107,7 +107,7 @@ func (h *AuthHandler) Callback(ctx *gin.Context) {
 		return
 	}
 
-	res, err := h.app.LoginOrRegisterUserOauth(result)
+	res, err := h.app.LoginOrRegisterUserOauth(ctx, result)
 	if err != nil {
 		v1.HandleError(ctx, http.StatusInternalServerError, err, nil)
 		return

@@ -7,7 +7,7 @@ security:
     google:
       client_id: OAUTH_GOOGLE_CLIENT_ID
       client_secret: OAUTH_GOOGLE_CLIENT_SECRET
-      redirect_url: http://localhost:8080/auth/login/oauth/callback?oauth_provider=Google
+      redirect_url: https://jobhub-80gx.onrender.com/auth/login/oauth/callback?oauth_provider=Google
       scopes: [
         https://www.googleapis.com/auth/userinfo.email,
         https://www.googleapis.com/auth/userinfo.profile,
@@ -16,7 +16,7 @@ security:
     github:
       client_id: OAUTH_GITHUB_CLIENT_ID
       client_secret: OAUTH_GITHUB_CLIENT_SECRET
-      redirect_url: http://localhost:8080/auth/login/oauth/callback?oauth_provider=Github
+      redirect_url: https://jobhub-80gx.onrender.com/auth/login/oauth/callback?oauth_provider=Github
       scopes: [
         user:email,
         read:user
@@ -36,17 +36,17 @@ data:
       driver: postgres
       nick: postgres
       name: postgres
-      username: postgres
-      password: dev123456
-      hostname: localhost
-      port: 5432
+      username: postgres.xiivsgnonhzqlrkdfnag
+      password: o1giO5i2itiepN31
+      hostname: aws-0-sa-east-1.pooler.supabase.com
+      port: 6543
       max_conn: 5
       max_idle: 1
-      transaction_timeout: 1
+      transaction_timeout: 20
 log:
   log_level: info
   encoding: json           # json or console
-  log_file_name: "./storage/logs/server/server.log"
+  log_file_name: "../../storage/logs/server/server.log"
   max_backups: 30
   max_age: 7
   max_size: 1024
