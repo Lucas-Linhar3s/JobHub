@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"reflect"
+	"strings"
 
 	"github.com/spf13/viper"
 )
@@ -37,98 +39,96 @@ func getViper(dir string) *viper.Viper {
 	return conf
 }
 
+// Função principal para carregar as configurações
 func LoadAttributes(viper *viper.Viper) *Config {
-	return &Config{
-		Env: viper.GetString("env"),
-		Http: &Http{
-			Host: viper.GetString("http.host"),
-			Port: viper.GetString("http.port"),
-		},
-		Security: loadAttributesEnv(viper).Security,
-		Data: &Data{
-			DB: &Db{
-				User: &User{
-					Driver:            viper.GetString("data.db.user.driver"),
-					Nick:              viper.GetString("data.db.user.nick"),
-					Name:              viper.GetString("data.db.user.name"),
-					Username:          viper.GetString("data.db.user.username"),
-					Password:          viper.GetString("data.db.user.password"),
-					HostName:          viper.GetString("data.db.user.hostname"),
-					Port:              viper.GetString("data.db.user.port"),
-					MaxConn:           viper.GetInt("data.db.user.max_conn"),
-					MaxIdle:           viper.GetInt("data.db.user.max_idle"),
-					TransationTimeout: viper.GetInt("data.db.user.transation_timeout"),
-					Dsn:               viper.GetString("data.db.user.dsn"),
-				},
-			},
-		},
-		Log: &Log{
-			LogLevel:    viper.GetString("log.log_level"),
-			Enconding:   viper.GetString("log.enconding"),
-			LogFileName: viper.GetString("log.log_file_name"),
-			MaxBackups:  viper.GetInt("log.max_backups"),
-			MaxAge:      viper.GetInt("log.max_age"),
-			MaxSize:     viper.GetInt("log.max_size"),
-			Compress:    viper.GetBool("log.compress"),
-		},
+	env := &Config{}
+	missingVars := findMissingVars(viper, reflect.ValueOf(env).Elem())
+
+	err := fmt.Errorf("missing required environment variables:\n -- %v --", strings.Join(missingVars, "\n"))
+
+	if len(missingVars) > 0 {
+		panic(err)
 	}
+	return env
 }
 
-func loadAttributesEnv(viper *viper.Viper) *Config {
-	envViper := viper.GetString("env")
-	if envViper == "prod" {
-		return &Config{
-			Security: &Security{
-				ApiSign: &ApiSign{
-					AppKey:      os.Getenv(viper.GetString("security.api_sign.app_key")),
-					AppSecurity: os.Getenv(viper.GetString("security.api_sign.app_security")),
-				},
-				Jwt: &Jwt{
-					ExpiresAt: viper.GetInt("security.jwt.expire_at"),
-					Key:       os.Getenv(viper.GetString("security.jwt.key")),
-				},
-				Oauth2: &Oauth2{
-					Google: &Google{
-						ClientId:     os.Getenv(viper.GetString("security.oauth2.google.client_id")),
-						ClientSecret: os.Getenv(viper.GetString("security.oauth2.google.client_secret")),
-						RedirectUrl:  viper.GetString("security.oauth2.google.redirect_url"),
-						Scopes:       viper.GetStringSlice("security.oauth2.google.scopes"),
-					},
-					Github: &Github{
-						RedirectUrl:  viper.GetString("security.oauth2.github.redirect_url"),
-						ClientId:     os.Getenv(viper.GetString("security.oauth2.github.client_id")),
-						ClientSecret: os.Getenv(viper.GetString("security.oauth2.github.client_secret")),
-						Scopes:       viper.GetStringSlice("security.oauth2.github.scopes"),
-					},
-				},
-			},
+// Função recursiva para verificar variáveis obrigatórias e setar valores
+func findMissingVars(viper *viper.Viper, v reflect.Value) []string {
+	var missingVars []string
+	t := v.Type()
+
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		tag := field.Tag.Get("yaml")
+
+		if tag == "" {
+			continue
 		}
-	} else {
-		return &Config{
-			Security: &Security{
-				ApiSign: &ApiSign{
-					AppKey:      viper.GetString("security.api_sign.app_key"),
-					AppSecurity: viper.GetString("security.api_sign.app_security"),
-				},
-				Jwt: &Jwt{
-					ExpiresAt: viper.GetInt("security.jwt.expire_at"),
-					Key:       viper.GetString("security.jwt.key"),
-				},
-				Oauth2: &Oauth2{
-					Google: &Google{
-						ClientId:     viper.GetString("security.oauth2.google.client_id"),
-						ClientSecret: viper.GetString("security.oauth2.google.client_secret"),
-						RedirectUrl:  viper.GetString("security.oauth2.google.redirect_url"),
-						Scopes:       viper.GetStringSlice("security.oauth2.google.scopes"),
-					},
-					Github: &Github{
-						RedirectUrl:  viper.GetString("security.oauth2.github.redirect_url"),
-						ClientId:     viper.GetString("security.oauth2.github.client_id"),
-						ClientSecret: viper.GetString("security.oauth2.github.client_secret"),
-						Scopes:       viper.GetStringSlice("security.oauth2.github.scopes"),
-					},
-				},
-			},
+
+		parts := splitTag(tag)
+		name := parts[0]
+		required := len(parts) > 1 && parts[1] == "required"
+		isEnvironment := len(parts) > 2 && parts[2] == "environment"
+		fieldValue := v.Field(i)
+
+		// Se o campo é um struct, fazemos a chamada recursiva
+		if fieldValue.Kind() == reflect.Ptr {
+			fieldValue.Set(reflect.New(fieldValue.Type().Elem()))
+			missingVars = append(missingVars, findMissingVars(viper, fieldValue.Elem())...)
+			continue
+		}
+
+		// Setando valores de campos não-estruturados
+		switch fieldValue.Kind() {
+		case reflect.String:
+			if isEnvironment {
+				value := os.Getenv(viper.GetString(name))
+				if required && value == "" {
+					missingVars = append(missingVars, name)
+				}
+				fieldValue.SetString(value)
+				break
+			}
+			value := viper.GetString(name)
+			if required && value == "" {
+				missingVars = append(missingVars, name)
+			}
+			fieldValue.SetString(value)
+		case reflect.Int:
+			value := viper.GetInt(name)
+			if required && value == 0 {
+				missingVars = append(missingVars, name)
+			}
+			fieldValue.SetInt(int64(value))
+		case reflect.Slice, reflect.Array:
+			value := viper.GetStringSlice(name)
+			if required && len(value) == 0 {
+				missingVars = append(missingVars, name)
+			}
+			fieldValue.Set(reflect.ValueOf(value))
+		case reflect.Bool:
+			value := viper.GetBool(name)
+			if required && !value {
+				missingVars = append(missingVars, name)
+			}
+			fieldValue.SetBool(value)
 		}
 	}
+	return missingVars
+}
+
+// Função para dividir a tag por vírgulas
+func splitTag(tag string) []string {
+	var result []string
+	var current string
+	for _, char := range tag {
+		if char == ',' {
+			result = append(result, current)
+			current = ""
+		} else {
+			current += string(char)
+		}
+	}
+	result = append(result, current)
+	return result
 }
