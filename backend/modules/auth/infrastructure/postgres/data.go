@@ -27,6 +27,7 @@ func (pg *PGAuth) RegisterUser(model *infrastructure.AuthModel) error {
 	return nil
 }
 
+// UpdateUser is a function that updates a user
 func (pg *PGAuth) UpdateUser(model *infrastructure.AuthModel) error {
 	if err := pg.Db.Builder.
 		Update("jobhub.users").

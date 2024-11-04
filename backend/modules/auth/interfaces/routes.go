@@ -24,7 +24,7 @@ func Routes(
 	return []gin.IRoutes{
 		group.POST("/", handler.RegisterUser),
 		group.POST("/login", handler.LoginWithEmailAndPassword),
-		group.GET("/login/oauth", handler.RedirectLoginOauth),
-		group.GET("/login/oauth/callback", handler.Callback),
+		group.GET("/login", handler.RedirectLoginOauth), // /login?oauth_provider={name}
+		group.GET("/login/callback", handler.Callback),
 	}
 }

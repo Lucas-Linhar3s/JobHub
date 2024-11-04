@@ -2,6 +2,7 @@ package domain
 
 import "github.com/Lucas-Linhar3s/JobHub/modules/auth/infrastructure"
 
+// IAuth is an interface that defines the methods that must be implemented by the Auth domain
 type IAuth interface {
 	VerifyEmail(email string) (bool, error)
 	RegisterUser(model *infrastructure.AuthModel) error

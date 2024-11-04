@@ -6,6 +6,7 @@ import (
 )
 
 var (
+	RoleDefault    = "user"
 	TokenRoleOauth = "Oauth2"
 )
 

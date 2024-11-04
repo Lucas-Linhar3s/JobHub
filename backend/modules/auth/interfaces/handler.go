@@ -76,7 +76,7 @@ func (h *AuthHandler) LoginWithEmailAndPassword(ctx *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param oauth_provider query string true "Oauth provider"
-// @Router /auth/login/oauth [get]
+// @Router /auth/login [get]
 func (h *AuthHandler) RedirectLoginOauth(ctx *gin.Context) {
 	oatuhProvider := ctx.Request.URL.Query().Get("oauth_provider")
 	h.app.RedirectLoginOauth(ctx, &oatuhProvider)
@@ -90,7 +90,7 @@ func (h *AuthHandler) RedirectLoginOauth(ctx *gin.Context) {
 // @Param code query string true "Code"
 // @Param state query string true "State"
 // @Success 200 {object} application.SessionOut "User login response"
-// @Router /auth/login/oauth/callback [get]
+// @Router /auth/login/callback [get]
 func (h *AuthHandler) Callback(ctx *gin.Context) {
 	fmt.Println(ctx.Request.URL)
 

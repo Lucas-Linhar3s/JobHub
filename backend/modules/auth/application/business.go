@@ -49,20 +49,12 @@ func NewAuthApp(
 func (app *AuthApp) RegisterUser(ctx *gin.Context, req *UserRegisterReq) error {
 	const msg = "Error while registering user"
 
-	commited := false
 	tx, err := app.db.NewTransaction()
 	if err != nil {
 		app.logger.Error(msg, zap.Error(err))
 		return err
 	}
-	defer func() {
-		if commited {
-			tx.Rollback()
-		} else {
-			app.logger.Error("Transaction not commited")
-		}
-	}()
-	app.logger.Info("Transaction started", zap.String("tx", fmt.Sprintf("%v", tx)))
+	defer tx.Rollback()
 
 	var (
 		service = domain.GetService(domain.GetRepository(tx))
@@ -102,7 +94,6 @@ func (app *AuthApp) RegisterUser(ctx *gin.Context, req *UserRegisterReq) error {
 		app.logger.Error(msg, zap.Error(err))
 		return err
 	}
-	commited = true
 
 	return nil
 }
@@ -122,7 +113,6 @@ func (app *AuthApp) LoginWithEmailAndPassword(ctx *gin.Context, req *UserRegiste
 		service = domain.GetService(domain.GetRepository(tx))
 		data    = new(domain.AuthModel)
 		res     = new(SessionOut)
-		role    = "user"
 	)
 
 	if err = app.validate.Struct(req); err != nil {
@@ -152,7 +142,7 @@ func (app *AuthApp) LoginWithEmailAndPassword(ctx *gin.Context, req *UserRegiste
 	}
 
 	if data.Role != nil {
-		role = *data.Role
+		domain.RoleDefault = *data.Role
 	}
 
 	now := time.Now()
@@ -161,14 +151,14 @@ func (app *AuthApp) LoginWithEmailAndPassword(ctx *gin.Context, req *UserRegiste
 	res.UserID = data.ID
 	res.DataExpiracao = &expiresAt
 
-	if res.AccessToken, err = app.jwt.GenToken("", *data.ID, *data.Email, role, expiresAt); err != nil {
+	if res.AccessToken, err = app.jwt.GenToken("", *data.ID, *data.Email, domain.RoleDefault, expiresAt); err != nil {
 		return nil, err
 	}
 
 	return res, nil
 }
 
-// LoginOauth logs in with oauth.
+// RedirectLoginOauth redirects to the login oauth.
 func (app *AuthApp) RedirectLoginOauth(ctx *gin.Context, oauthProvider *string) {
 	now := time.Now()
 	expiresAt := time.Date(now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute()+5, now.Second(), now.Nanosecond(), now.Location())
@@ -218,7 +208,8 @@ func (app *AuthApp) GetUserData(ctx *gin.Context, req CalbackSSOReq) (*UserDataC
 		app.logger.Error("Error while getting user data", zap.Error(err))
 		return nil, err
 	}
-	res := new(UserDataCallbackRes)
+
+	var res *UserDataCallbackRes
 	if res, err = utils.ConvertRequestToModel[UserDataCallbackRes](response); err != nil {
 		app.logger.Error("Error while converting request to model", zap.Error(err))
 	}
@@ -242,7 +233,6 @@ func (app *AuthApp) LoginOrRegisterUserOauth(ctx *gin.Context, req *UserDataCall
 		data    *domain.AuthModel
 		service = domain.GetService(domain.GetRepository(tx))
 		res     = new(SessionOut)
-		role    = "user"
 	)
 
 	if err = app.validate.Struct(req); err != nil {
@@ -280,7 +270,7 @@ func (app *AuthApp) LoginOrRegisterUserOauth(ctx *gin.Context, req *UserDataCall
 	}
 
 	if data.Role != nil {
-		role = *data.Role
+		domain.RoleDefault = *data.Role
 	}
 
 	now := time.Now()
@@ -289,7 +279,7 @@ func (app *AuthApp) LoginOrRegisterUserOauth(ctx *gin.Context, req *UserDataCall
 	res.UserID = utils.GetStringPointer(*data.OauthId)
 	res.DataExpiracao = &expiresAt
 
-	if res.AccessToken, err = app.jwt.GenToken(*data.OauthProvider, *data.OauthId, *data.Email, role, expiresAt); err != nil {
+	if res.AccessToken, err = app.jwt.GenToken(*data.OauthProvider, *data.OauthId, *data.Email, domain.RoleDefault, expiresAt); err != nil {
 		return nil, err
 	}
 
