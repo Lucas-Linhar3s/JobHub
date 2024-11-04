@@ -16,6 +16,7 @@ definitions:
         type: string
     required:
     - email
+    - password
     type: object
 host: localhost:8080
 info:
@@ -54,6 +55,22 @@ paths:
       tags:
       - auth
   /auth/login:
+    get:
+      consumes:
+      - application/json
+      description: Redirect to login with oauth
+      parameters:
+      - description: Oauth provider
+        in: query
+        name: oauth_provider
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: Redirect to login with oauth
+      tags:
+      - auth
     post:
       consumes:
       - application/json
@@ -75,24 +92,7 @@ paths:
       summary: Login with email and password
       tags:
       - auth
-  /auth/login/oauth:
-    get:
-      consumes:
-      - application/json
-      description: Redirect to login with oauth
-      parameters:
-      - description: Oauth provider
-        in: query
-        name: oauth_provider
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses: {}
-      summary: Redirect to login with oauth
-      tags:
-      - auth
-  /auth/login/oauth/callback:
+  /auth/login/callback:
     get:
       consumes:
       - application/json

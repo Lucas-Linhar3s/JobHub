@@ -59,6 +59,29 @@ const docTemplate = `{
             }
         },
         "/auth/login": {
+            "get": {
+                "description": "Redirect to login with oauth",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Redirect to login with oauth",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Oauth provider",
+                        "name": "oauth_provider",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            },
             "post": {
                 "description": "Login with email and password",
                 "consumes": [
@@ -92,32 +115,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/login/oauth": {
-            "get": {
-                "description": "Redirect to login with oauth",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Redirect to login with oauth",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Oauth provider",
-                        "name": "oauth_provider",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {}
-            }
-        },
-        "/auth/login/oauth/callback": {
+        "/auth/login/callback": {
             "get": {
                 "description": "Callback oauth",
                 "consumes": [
@@ -175,7 +173,8 @@ const docTemplate = `{
         "application.UserRegisterReq": {
             "type": "object",
             "required": [
-                "email"
+                "email",
+                "password"
             ],
             "properties": {
                 "email": {
